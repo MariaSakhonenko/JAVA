@@ -1,38 +1,59 @@
-import java.util.Formatter;
-import java.util.Scanner;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.InputStreamReader;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+
+import static java.lang.System.*;
 
 public class Main
 {
-    public static void main(String[] args)
+    public static void main(String[] args) throws IOException
     {
-        Scanner scanner = new Scanner(System.in);
-        System.out.print("Введите значение x (x > 0): ");
-        double x = scanner.nextDouble();
-        while(x <= 0)
+        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
+
+        BigDecimal x;
+        while (true)
         {
-            System.out.print("Введите значение x (x > 0): ");
-            x = scanner.nextDouble();
+            out.print("Введите значение x (x > 0): ");
+            x = new BigDecimal(reader.readLine());
+            if (x.compareTo(BigDecimal.ZERO) > 0)
+            {
+                break;
+            }
+            else
+            {
+                out.println("Try again.");
+            }
         }
-        System.out.print("Введите значение k (натуральное число): ");
-        int k = scanner.nextInt();
-        while (k <= 0)
+
+        int k;
+        while (true)
         {
-            System.out.print("Введите значение k (натуральное число): ");
-            k = scanner.nextInt();
+            out.print("Введите значение k (натуральное число): ");
+            k = Integer.parseInt(reader.readLine());
+
+
+            if (k > 0)
+            {
+                break;
+            }
+            else
+            {
+                out.println("Try again.");
+            }
         }
 
         TaylorSeries obj = new TaylorSeries(k, x);
-        double res = obj.ln();
-        int IntRes = (int) res;
+        BigDecimal res = obj.ln();
 
-        double standardLog = Math.log(x);
+        BigDecimal standardLog = BigDecimal.valueOf(Math.log(x.doubleValue()));
 
-        Formatter formatter = new Formatter();
-        formatter.format("Приближенное значение ln(%.2f): %+0" + Integer.valueOf(k+1).toString() + "." + Integer.valueOf(k+1).toString() + "f%n", x, res);
-        formatter.format("Стандартное значение ln(%.2f):  %+0" + Integer.valueOf(k+1).toString() + "." + Integer.valueOf(k+1).toString() + "f%n", x, standardLog);
-        System.out.println(formatter);
+        out.printf("Приближенное значение ln(%.2f): %+0" + (k + 1) + "." + (k + 1) + "f%n", x, res);
+        out.printf("Стандартное значение ln(%.2f):  %+0" + (k + 1) + "." + (k + 1) + "f%n", x, standardLog);
 
-        System.out.printf("n в восьмеричном виде: %#o%n", IntRes);
-        System.out.printf("n в шестнадцатеричном виде: %#x%n", IntRes);
+        int intRes = res.setScale(0, RoundingMode.DOWN).intValue();
+        out.printf("n в восьмеричном виде: %#o%n", intRes);
+        out.printf("n в шестнадцатеричном виде: %#x%n", intRes);
     }
 }
