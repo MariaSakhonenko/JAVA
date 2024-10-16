@@ -1,59 +1,87 @@
-import java.io.BufferedReader;
-import java.io.IOException;
-import java.io.InputStreamReader;
-import java.math.BigDecimal;
-import java.math.RoundingMode;
-
-import static java.lang.System.*;
+import java.io.*;
+import java.text.*;
+import java.util.*;
+import java.util.regex.*;
 
 public class Main
 {
-    public static void main(String[] args) throws IOException
+    public static void main(String[] args)
     {
-        BufferedReader reader = new BufferedReader(new InputStreamReader(in));
-
-        BigDecimal x;
-        while (true)
+        try (BufferedReader fileReader = new BufferedReader(new FileReader("input.txt"));
+             BufferedWriter writer = new BufferedWriter(new FileWriter("output.txt")))
         {
-            out.print("Введите значение x (x > 0): ");
-            x = new BigDecimal(reader.readLine());
-            if (x.compareTo(BigDecimal.ZERO) > 0)
-            {
-                break;
-            }
-            else
-            {
-                out.println("Try again.");
-            }
-        }
 
-        int k;
-        while (true)
+            // Считываем строки из файла
+            String lexemes = fileReader.readLine();
+            String delimiters = fileReader.readLine();
+
+            writer.write("Исходная строка: " + lexemes + "\n");
+
+            // Разделение лексем
+            StringTokenizer tokenizer = new StringTokenizer(lexemes, delimiters);
+            List<String> lexemeList = new ArrayList<>();
+            while (tokenizer.hasMoreTokens())
+            {
+                lexemeList.add(tokenizer.nextToken());
+            }
+
+            writer.write("Все найденные лексемы: " + lexemeList + "\n");
+
+            // Найдем вещественные числа и запишем их в массив
+            List<Double> floatNumbers = new ArrayList<>();
+            for (String lexeme : lexemeList)
+            {
+                try {
+                    floatNumbers.add(Double.parseDouble(lexeme));
+                }
+                catch (NumberFormatException e)
+                {
+                    // Игнорируем нечисловые лексемы
+                }
+            }
+
+            writer.write("Вещественные числа: " + floatNumbers + "\n");
+
+            // Найдем время (ММ:ЧЧ) среди лексем, не являющихся числами
+            Pattern timePattern = Pattern.compile("\\b\\d{2}:\\d{2}\\b");
+            List<String> times = new ArrayList<>();
+            for (String lexeme : lexemeList)
+            {
+                Matcher matcher = timePattern.matcher(lexeme);
+                if (matcher.find())
+                {
+                    times.add(matcher.group());
+                }
+            }
+
+            writer.write("Все найденные времена: " + String.join(", ", times) + "\n");
+
+            // Подстроку с самой маленькой длиной, начинающуюся цифрой, удалить из строки
+            Pattern digitPattern = Pattern.compile("\\b\\d+\\S*\\b");
+            Matcher digitMatcher = digitPattern.matcher(lexemes);
+            String shortestSubstring = null;
+            while (digitMatcher.find())
+            {
+                String substring = digitMatcher.group();
+                if (shortestSubstring == null || substring.length() < shortestSubstring.length())
+                {
+                    shortestSubstring = substring;
+                }
+            }
+
+            StringBuilder result = new StringBuilder(lexemes);
+            if (shortestSubstring != null)
+            {
+                int startIndex = result.indexOf(shortestSubstring);
+                result.delete(startIndex, startIndex + shortestSubstring.length());
+            }
+
+            writer.write("Изменённая строка: " + result.toString().trim() + "\n");
+
+        }
+        catch (IOException e)
         {
-            out.print("Введите значение k (натуральное число): ");
-            k = Integer.parseInt(reader.readLine());
-
-
-            if (k > 0)
-            {
-                break;
-            }
-            else
-            {
-                out.println("Try again.");
-            }
+            e.printStackTrace();
         }
-
-        TaylorSeries obj = new TaylorSeries(k, x);
-        BigDecimal res = obj.ln();
-
-        BigDecimal standardLog = BigDecimal.valueOf(Math.log(x.doubleValue()));
-
-        out.printf("Приближенное значение ln(%.2f): %+0" + (k + 1) + "." + (k + 1) + "f%n", x, res);
-        out.printf("Стандартное значение ln(%.2f):  %+0" + (k + 1) + "." + (k + 1) + "f%n", x, standardLog);
-
-        int intRes = res.setScale(0, RoundingMode.DOWN).intValue();
-        out.printf("n в восьмеричном виде: %#o%n", intRes);
-        out.printf("n в шестнадцатеричном виде: %#x%n", intRes);
     }
 }
